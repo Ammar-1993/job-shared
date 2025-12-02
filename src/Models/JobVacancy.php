@@ -2,17 +2,17 @@
 
 namespace App\Models;
 
+use App\Enums\JobType;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
-use App\Models\JobCategory;
 
 class JobVacancy extends Model
 {
     use HasFactory, HasUuids, SoftDeletes;
-    protected $table = 'job_vacancies';
 
+    protected $table = 'job_vacancies';
     protected $keyType = 'string';
     public $incrementing = false;
 
@@ -25,20 +25,18 @@ class JobVacancy extends Model
         'viewCount',
         'jobCategoryId',
         'companyId',
-
-    ];
-
-      protected $dates = [
-        'deleted_at',
     ];
 
     protected function casts(): array
     {
         return [
             'deleted_at' => 'datetime',
-            'type' => \App\Enums\JobType::class,
+            'type' => JobType::class, // استخدام Enum
+            'viewCount' => 'integer',
         ];
     }
+
+    // Relationships
 
     public function jobCategory()
     {
