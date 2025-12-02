@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\ApplicationStatus;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\SoftDeletes;
@@ -9,10 +10,9 @@ use Illuminate\Database\Eloquent\Concerns\HasUuids;
 
 class JobApplication extends Model
 {
-    //
     use HasFactory, HasUuids, SoftDeletes;
-    protected $table = 'job_applications';
 
+    protected $table = 'job_applications';
     protected $keyType = 'string';
     public $incrementing = false;
 
@@ -23,20 +23,14 @@ class JobApplication extends Model
         'jobVacancyId',
         'userId',
         'resumeId',
-        
-    
-
-    ];
-
-      protected $dates = [
-        'deleted_at',
     ];
 
     protected function casts(): array
     {
         return [
             'deleted_at' => 'datetime',
-            'status' => \App\Enums\JobStatus::class,
+            'status' => ApplicationStatus::class, // استخدام Enum الصحيح
+            'aiGeneratedScore' => 'float', // ضمان التعامل كرقم
         ];
     }
 
