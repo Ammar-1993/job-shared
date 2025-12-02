@@ -9,37 +9,33 @@ use Illuminate\Database\Eloquent\Concerns\HasUuids;
 
 class Resume extends Model
 {
-    //
     use HasFactory, HasUuids, SoftDeletes;
+
     protected $table = 'resumes';
     protected $keyType = 'string';
     public $incrementing = false;
 
     protected $fillable = [
-      
-        // canonical names (DB columns)
         'fileName',
         'fileUrl',
-        // alternate names used elsewhere in the app (map to canonical names)
-        'filename',
-        'fileUri',
-        'summary',
         'contactDetails',
         'education',
         'experience',
         'skills',
+        'summary',
         'userId',
-        
-    ];
-
-      protected $dates = [
-        'deleted_at',
+        // ملاحظة: الحقول البديلة filename/fileUri لا تضاف هنا لأنها ليست في قاعدة البيانات
     ];
 
     protected function casts(): array
     {
         return [
             'deleted_at' => 'datetime',
+            // تحويل الحقول النصية الطويلة إلى مصفوفات تلقائياً
+            'education' => 'array',
+            'experience' => 'array',
+            'skills' => 'array',
+            'contactDetails' => 'array', // في حال كانت JSON أيضاً
         ];
     }
 
@@ -48,42 +44,30 @@ class Resume extends Model
         return $this->belongsTo(User::class, 'userId', 'id');
     }
 
-    /**
-     * Accessor for legacy/alternate attribute `filename` -> maps to DB `fileName`.
-     */
-    public function getFilenameAttribute()
-    {
-        return $this->attributes['fileName'] ?? null;
-    }
-
-    /**
-     * Mutator for legacy/alternate attribute `filename` -> maps to DB `fileName`.
-     */
-    public function setFilenameAttribute($value)
-    {
-        $this->attributes['fileName'] = $value;
-    }
-
-    /**
-     * Accessor for legacy/alternate attribute `fileUri` -> maps to DB `fileUrl`.
-     */
-    public function getFileUriAttribute()
-    {
-        return $this->attributes['fileUrl'] ?? null;
-    }
-
-    /**
-     * Mutator for legacy/alternate attribute `fileUri` -> maps to DB `fileUrl`.
-     */
-    public function setFileUriAttribute($value)
-    {
-        $this->attributes['fileUrl'] = $value;
-    }
-
     public function jobApplications()
     {
         return $this->hasMany(JobApplication::class, 'resumeId', 'id');
     }
 
+    // Accessors & Mutators for Backward Compatibility
 
+    public function getFilenameAttribute()
+    {
+        return $this->attributes['fileName'] ?? null;
+    }
+
+    public function setFilenameAttribute($value)
+    {
+        $this->attributes['fileName'] = $value;
+    }
+
+    public function getFileUriAttribute()
+    {
+        return $this->attributes['fileUrl'] ?? null;
+    }
+
+    public function setFileUriAttribute($value)
+    {
+        $this->attributes['fileUrl'] = $value;
+    }
 }
