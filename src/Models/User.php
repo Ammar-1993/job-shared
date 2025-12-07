@@ -21,6 +21,7 @@ class User extends Authenticatable
         'email',
         'password',
         'role',
+        'is_active',
     ];
 
     protected $hidden = [
@@ -35,6 +36,7 @@ class User extends Authenticatable
             'password' => 'hashed',
             'deleted_at' => 'datetime',
             'role' => UserRole::class, // ربط الدور بالـ Enum
+            'is_active' => 'boolean',
         ];
     }
 
