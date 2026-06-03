@@ -71,7 +71,7 @@ $jobs = JobVacancy::where('status', JobStatus::Active)->get();
 
 When setting up the **Job Backoffice** app using `php artisan migrate --seed`, an administrator account is created by the backoffice database seeder.
 
-- **Role**: admin
+- **Role**: admin (Super User)
 - **Email**: admin@admin.com
 - **Password**: 12345678
 
