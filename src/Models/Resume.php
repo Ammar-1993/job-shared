@@ -24,7 +24,8 @@ class Resume extends Model
         'skills',
         'summary',
         'userId',
-        // ملاحظة: الحقول البديلة filename/fileUri لا تضاف هنا لأنها ليست في قاعدة البيانات
+        'filename',
+        'fileUri',
     ];
 
     protected function casts(): array
