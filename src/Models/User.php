@@ -16,12 +16,17 @@ class User extends Authenticatable
     protected $keyType = 'string';
     public $incrementing = false;
 
+    protected $attributes = [
+        'is_active' => true,
+    ];
+
     protected $fillable = [
         'name',
         'email',
         'password',
         'role',
         'is_active',
+        'last_login_at',
     ];
 
     protected $hidden = [
@@ -35,7 +40,7 @@ class User extends Authenticatable
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
             'deleted_at' => 'datetime',
-            'role' => UserRole::class, // ربط الدور بالـ Enum
+            'last_login_at' => 'datetime',
             'is_active' => 'boolean',
         ];
     }
