@@ -21,9 +21,9 @@ jobs:
             cd /opt/job-platform/job-shared
             git pull origin main
             
-            echo "⚙️ Rebuilding ALL Docker Containers (Shared Update)..."
-            cd /opt/job-platform
-            docker compose up -d --build
+            echo "🔄 Updating Autoloader for Job-App & Job-Admin..."
+            docker exec job_app_web composer dump-autoload
+            docker exec job_admin_web composer dump-autoload
             
             echo "🧹 Clearing All Caches..."
             docker exec job_app_web php artisan optimize:clear
