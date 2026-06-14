@@ -25,6 +25,7 @@ class JobVacancy extends Model
         'viewCount',
         'jobCategoryId',
         'companyId',
+        'vector_embedding',
     ];
 
     protected function casts(): array
