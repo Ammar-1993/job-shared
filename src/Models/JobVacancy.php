@@ -25,18 +25,17 @@ class JobVacancy extends Model
         'viewCount',
         'jobCategoryId',
         'companyId',
+        'vector_embedding',
     ];
 
     protected function casts(): array
     {
         return [
             'deleted_at' => 'datetime',
-            'type' => JobType::class, // استخدام Enum
+            'type' => JobType::class,
             'viewCount' => 'integer',
         ];
     }
-
-    // Relationships
 
     public function jobCategory()
     {
