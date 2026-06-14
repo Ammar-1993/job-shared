@@ -26,7 +26,6 @@ class Resume extends Model
         'userId',
         'filename',
         'fileUri',
-        'vector_embedding',
     ];
 
     protected function casts(): array
