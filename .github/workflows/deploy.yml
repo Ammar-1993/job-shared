@@ -21,12 +21,15 @@ jobs:
             cd /opt/job-platform/job-shared
             git pull origin main
             
-            echo "🔄 Updating Autoloader for Job-App & Job-Admin..."
-            docker exec job_app_web composer dump-autoload
-            docker exec job_admin_web composer dump-autoload
+            echo "🔄 Rebuilding Apps to update Autoloader with new Shared classes..."
+            cd /opt/job-platform
+            docker compose up -d --build job-app job-admin
             
             echo "🧹 Clearing All Caches..."
             docker exec job_app_web php artisan optimize:clear
             docker exec job_admin_web php artisan optimize:clear
+            
+            echo "🗑️ Auto-cleaning old Docker images to save VPS space..."
+            docker image prune -f
             
             echo "✅ Deployment Successful!"
