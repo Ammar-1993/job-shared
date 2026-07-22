@@ -35,7 +35,7 @@ Strictly typed enumerations to ensure data integrity:
 
 ## ⚙️ Usage & Integration
 
-This package is installed as a local path repository in the dependent projects.
+This package is installed as a VCS repository in the dependent projects.
 
 ### Composer Configuration
 To use this library in `job-app` or `job-backoffice`, the `composer.json` includes:
@@ -44,10 +44,7 @@ To use this library in `job-app` or `job-backoffice`, the `composer.json` includ
 "repositories": [
     {
         "type": "vcs",
-        "url": "https://github.com/Ammar-1993/job-shared.git",
-        "options": {
-            "symlink": true
-        }
+        "url": "https://github.com/Ammar-1993/job-shared.git"
     }
 ],
 "require": {
@@ -58,12 +55,21 @@ To use this library in `job-app` or `job-backoffice`, the `composer.json` includ
 ### Example Usage
 
 ```php
-use App\Models\JobVacancy;
-use App\Enums\JobStatus;
+use Job\Shared\Models\JobVacancy;
+use Job\Shared\Enums\JobStatus;
 
 // Querying shared models
 $jobs = JobVacancy::where('status', JobStatus::Active)->get();
 ```
+
+---
+
+## 🌐 Live Platform URLs
+
+| Application | URL |
+|-------------|-----|
+| **Job App** (Candidate Portal) | [hireme-platform.online](https://hireme-platform.online) |
+| **Job Backoffice** (Admin Dashboard) | [admin.hireme-platform.online](https://admin.hireme-platform.online) |
 
 ---
 
@@ -75,9 +81,7 @@ When setting up the **Job Backoffice** app using `php artisan migrate --seed`, a
 - **Email**: admin@admin.com
 - **Password**: 12345678
 
-Security note:
-- Do **not** use these default credentials in production.
-- Change the admin password immediately after deployment.
+> **Warning:** Do **not** use these default credentials in production. Change the admin password immediately after first login.
 
 ---
 
