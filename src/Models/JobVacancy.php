@@ -26,6 +26,11 @@ class JobVacancy extends Model
         'jobCategoryId',
         'companyId',
         'vector_embedding',
+        // حقول تتبع المصدر الخارجي (أُضيفت لدعم pipeline الاستيراد)
+        'source_platform',
+        'source_url',
+        'external_id',
+        'imported_at',
     ];
 
     protected function casts(): array
@@ -34,7 +39,17 @@ class JobVacancy extends Model
             'deleted_at' => 'datetime',
             'type' => JobType::class,
             'viewCount' => 'integer',
+            'imported_at' => 'datetime',
         ];
+    }
+
+    /**
+     * الوظائف المستوردة تلقائياً من مصادر خارجية (Greenhouse, WeWorkRemotely...)
+     * يُميّزها عن الوظائف المنشورة يدوياً عبر لوحة التحكم.
+     */
+    public function scopeImported($query)
+    {
+        return $query->whereNotNull('source_platform');
     }
 
     public function jobCategory()
