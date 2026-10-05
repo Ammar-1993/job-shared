@@ -40,7 +40,7 @@ class ResumeObserver
         }
 
         try {
-            $text = json_encode([
+            $text = \App\Support\EmbeddingText::forResume([
                 'summary'    => $resume->summary,
                 'skills'     => $resume->skills,
                 'experience' => $resume->experience,

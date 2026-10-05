@@ -57,6 +57,16 @@ class User extends Authenticatable
         return $this->hasMany(JobApplication::class, 'userId', 'id');
     }
 
+    public function hunterApplications()
+    {
+        return $this->hasMany(JobApplication::class, 'userId', 'id')->where('is_personal', true);
+    }
+
+    public function clientApplications()
+    {
+        return $this->hasMany(JobApplication::class, 'userId', 'id')->where('is_personal', false);
+    }
+
     public function company()
     {
         return $this->hasOne(Company::class, 'ownerId', 'id');
