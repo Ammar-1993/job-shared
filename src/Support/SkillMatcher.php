@@ -486,6 +486,20 @@ class SkillMatcher
             }
         }
 
+        // 6. C / C++ Stack Check
+        $hasCpp = in_array('c++', $candidateLower, true) || in_array('cpp', $candidateLower, true);
+        if (preg_match('/' . $delim . '(?:c\+\+|cpp|embedded c)' . $endDelim . '/i', $titleLower)) {
+            if (!$hasCpp) {
+                return [
+                    'mismatch'       => true,
+                    'penalty'        => 35,
+                    'bonus'          => 0,
+                    'required_stack' => 'C++',
+                    'reason'         => 'Role specifically targets C++ (missing from your core stack)',
+                ];
+            }
+        }
+
         // Positive Affinity 1: Frontend / React / TypeScript Alignment
         if (preg_match('/' . $delim . '(?:frontend|front-end|react|vue|next\.js|typescript|web developer)' . $endDelim . '/i', $titleLower)) {
             if ($hasJsFrontend) {

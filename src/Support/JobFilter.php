@@ -20,6 +20,7 @@ class JobFilter
         'business development', 'bdr', 'sdr', 'sales lead', 'commercial manager',
         'strategic partnerships', 'partnerships manager', 'partnerships lead', 'sales director',
         'director of sales', 'director, strategic partnerships', 'commercial director',
+        'sales engineer', 'alliances field engineer', 'partner engineer',
         
         // Marketing & Growth
         'marketing manager', 'marketing specialist', 'digital marketing', 'seo specialist',
