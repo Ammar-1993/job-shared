@@ -172,7 +172,29 @@ class JobFilter
             }
         }
 
-        // 2. If location is specified, it must either be Remote / Worldwide or GCC / MENA
+        // 2. Check for non-GCC regional restrictions (e.g. 'Remote - India', 'Remote (USA)')
+        if ($locLower !== '' && $locLower !== 'not specified') {
+            $nonGccExclusions = [
+                'india', 'bangalore', 'bengaluru', 'mumbai', 'delhi', 'hyderabad', 'pune',
+                'united states', '\busa\b', '\bu\.s\.\b', 'canada', 'united kingdom', '\buk\b', 'london',
+                'germany', 'france', 'spain', 'netherlands', 'australia', 'ireland', 'dublin',
+                'poland', 'japan', 'singapore', 'brazil', 'mexico', 'nigeria', 'pakistan'
+            ];
+
+            foreach ($nonGccExclusions as $ex) {
+                if (preg_match('/' . $ex . '/i', $locLower)) {
+                    // If it ALSO explicitly contains GCC, allow (e.g. 'Dubai or London')
+                    if (! preg_match('/(saudi|riyadh|jeddah|dubai|abu dhabi|\buae\b|kuwait|qatar|bahrain|\boman\b)/i', $locLower)) {
+                        return [
+                            'eligible' => false,
+                            'reason'   => "Disqualified: location '{$location}' is restricted to non-GCC region",
+                        ];
+                    }
+                }
+            }
+        }
+
+        // 3. If location is specified, it must either be Remote / Worldwide or GCC / MENA
         if ($locLower !== '' && $locLower !== 'not specified') {
             $isTargetLocation = false;
             foreach (self::$eligibleLocationPatterns as $pattern) {
