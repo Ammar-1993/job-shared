@@ -17,19 +17,53 @@ jobs:
           username: ${{ secrets.SERVER_USERNAME }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
-            echo "🚀 Starting Deployment for Job-Shared Library..."
+            set -e
+            echo "🚀 Starting Automated Deployment for Job-Shared Library..."
+
             cd /opt/job-platform/job-shared
-            git pull origin main
-            
-            echo "🔄 Rebuilding Apps to update Autoloader with new Shared classes..."
-            cd /opt/job-platform
-            docker compose up -d --build job-app job-admin
-            
-            echo "🧹 Clearing All Caches..."
-            docker exec job_app_web php artisan optimize:clear
+            git fetch origin main
+
+            NEEDS_REBUILD=$(git diff --name-only HEAD origin/main | grep -E "^composer\.(json|lock)" || true)
+
+            git reset --hard origin/main
+
+            if [ -n "$NEEDS_REBUILD" ]; then
+              echo "🔨 Dependency changes detected in job-shared. Rebuilding containers sequentially to prevent OOM..."
+              cd /opt/job-platform
+              # Build sequentially (never simultaneously) to protect the 1GB RAM VPS
+              docker compose up -d --build --no-deps job-admin
+              docker compose up -d --build --no-deps job-app
+            else
+              echo "⚡ Fast sync: Syncing shared classes to both apps in-place..."
+              # Sync to vendor directories in both containers
+              docker cp /opt/job-platform/job-shared/src/. job_admin_web:/app/vendor/job/shared/src/
+              docker cp /opt/job-platform/job-shared/src/. job_app_web:/app/vendor/job/shared/src/
+
+              # Sync to app/ directories for classes mirrored directly
+              docker cp /opt/job-platform/job-shared/src/Support/. job_admin_web:/app/app/Support/ 2>/dev/null || true
+              docker cp /opt/job-platform/job-shared/src/Support/. job_app_web:/app/app/Support/ 2>/dev/null || true
+              docker cp /opt/job-platform/job-shared/src/Enums/. job_admin_web:/app/app/Enums/ 2>/dev/null || true
+              docker cp /opt/job-platform/job-shared/src/Enums/. job_app_web:/app/app/Enums/ 2>/dev/null || true
+
+              # Update host copies so future Docker builds have latest code
+              cp -rf /opt/job-platform/job-shared/src/Support/. /opt/job-platform/job-backoffice/app/Support/ 2>/dev/null || true
+              cp -rf /opt/job-platform/job-shared/src/Support/. /opt/job-platform/job-app/app/Support/ 2>/dev/null || true
+            fi
+
+            # Run migrations
+            echo "🗄️ Running migrations..."
+            docker exec job_admin_web php artisan migrate --force
+
+            # Optimize both applications
+            echo "🧹 Clearing and optimizing caches for Both Apps..."
             docker exec job_admin_web php artisan optimize:clear
-            
-            echo "🗑️ Auto-cleaning old Docker images to save VPS space..."
+            docker exec job_admin_web php artisan optimize
+            docker exec job_app_web php artisan optimize:clear
+            docker exec job_app_web php artisan optimize
+            docker exec job_app_web php artisan queue:restart 2>/dev/null || true
+
+            # Prune dangling images
+            echo "🗑️ Cleaning up dangling images..."
             docker image prune -f
-            
-            echo "✅ Deployment Successful!"
+
+            echo "✅ Job-Shared Deployment Successful!"
