@@ -18,11 +18,13 @@ class JobFilter
         // Sales & Business Development
         'sales manager', 'sales executive', 'sales representative', 'account executive',
         'business development', 'bdr', 'sdr', 'sales lead', 'commercial manager',
+        'strategic partnerships', 'partnerships manager', 'partnerships lead', 'sales director',
+        'director of sales', 'director, strategic partnerships', 'commercial director',
         
         // Marketing & Growth
         'marketing manager', 'marketing specialist', 'digital marketing', 'seo specialist',
         'content writer', 'copywriter', 'social media', 'growth marketer', 'event manager',
-        'public relations', 'brand manager',
+        'public relations', 'brand manager', 'director of marketing', 'marketing director',
         
         // HR & Talent Acquisition
         'recruiter', 'talent acquisition', 'human resources', 'hr generalist', 'hr manager',
@@ -32,7 +34,7 @@ class JobFilter
         // Finance, Accounting & Audit
         'accountant', 'accounting', 'bookkeeper', 'financial analyst', 'tax specialist',
         'auditor', 'audit', 'finance manager', 'billing specialist', 'risk analyst', 'risk strategy',
-        'controller', 'treasury',
+        'controller', 'treasury', 'finance director', 'director of finance',
         
         // Legal & Compliance
         'legal counsel', 'paralegal', 'attorney', 'general counsel', 'lawyer', 'compliance manager',
@@ -45,33 +47,33 @@ class JobFilter
         
         // Design & Creative (non-engineering)
         'product designer', 'ux designer', 'ui designer', 'ux/ui', 'graphic designer',
-        'visual designer', 'motion designer', 'brand designer', 'art director',
+        'visual designer', 'motion designer', 'brand designer', 'art director', 'creative director',
         
-        // Non-technical Management
+        // Non-technical Management & Strategy
         'project manager', 'digital project manager', 'program manager', 'scrum master',
-        'agile coach', 'delivery manager', 'product manager'
+        'agile coach', 'delivery manager', 'product manager', 'strategy director', 'managing director'
     ];
 
     /**
      * Positive technical role keywords.
-     * At least one must be present in the job title or it must be clearly technical.
+     * At least one must be present in the job title using boundary-safe matching.
      *
      * @var string[]
      */
     protected static array $technicalTitles = [
         'developer', 'engineer', 'programmer', 'architect', 'coder', 'full stack', 'fullstack',
         'backend', 'back-end', 'frontend', 'front-end', 'software', 'devops', 'sre',
-        'cloud', 'data scientist', 'data science', 'machine learning', 'ml engineer',
-        'ai engineer', 'ai researcher', 'artificial intelligence', 'data engineer',
+        'site reliability engineer', 'cloud', 'data scientist', 'data science', 'machine learning',
+        'ml engineer', 'ai engineer', 'ai researcher', 'artificial intelligence', 'data engineer',
         'database', 'dba', 'sysadmin', 'systems engineer', 'qa engineer', 'test engineer',
         'tech lead', 'technical lead', 'engineering manager', 'director of engineering',
-        'head of engineering', 'cto', 'solution architect', 'solutions architect',
+        'head of engineering', 'cto', 'chief technology officer', 'solution architect', 'solutions architect',
         'web developer', 'mobile developer', 'ios', 'android', 'flutter', 'react', 'node',
         'python', 'php', 'laravel', 'golang', 'ruby', 'java', 'c++', 'c#', '.net'
     ];
 
     /**
-     * Visa / Citizenship / Security Clearance disqualifiers in job description.
+     * Visa / Citizenship / Security Clearance disqualifiers in job description or title.
      *
      * @var string[]
      */
@@ -112,6 +114,14 @@ class JobFilter
         'must be physically located in the us',
         'must be located in north america',
         'only candidates based in north america',
+        'emirati national only',
+        'emirati national',
+        '(emirati national)',
+        'for emirati nationals only',
+        'saudi national only',
+        '(saudi national only)',
+        'for saudi nationals only',
+        'saudi nationals only',
     ];
 
     /**
@@ -141,9 +151,13 @@ class JobFilter
             }
         }
 
-        // 2. Must contain at least one positive technical indicator
+        // 2. Must contain at least one positive technical indicator using boundary-safe delimiters
+        $delim = '(?<=^|[\s,.\-\/_\(\)\[\]:&|])';
+        $endDelim = '(?=$|[\s,.\-\/_\(\)\[\]:&|])';
+
         foreach (self::$technicalTitles as $positive) {
-            if (str_contains($cleanTitle, $positive)) {
+            $pattern = '/' . $delim . preg_quote($positive, '/') . $endDelim . '/i';
+            if (preg_match($pattern, $cleanTitle)) {
                 return true;
             }
         }
@@ -157,14 +171,16 @@ class JobFilter
      *
      * @return array{eligible: bool, reason: ?string}
      */
-    public static function isLocationEligible(string $location, string $description): array
+    public static function isLocationEligible(string $location, string $description, string $title = ''): array
     {
-        $descLower = strtolower($description);
-        $locLower  = strtolower(trim($location));
+        $descLower  = strtolower($description);
+        $titleLower = strtolower($title);
+        $locLower   = strtolower(trim($location));
+        $combinedText = $titleLower . ' ' . $descLower;
 
-        // 1. Check for hard citizenship / clearance barriers in description
+        // 1. Check for hard citizenship / clearance barriers in description or title
         foreach (self::$visaDisqualifiers as $disqualifier) {
-            if (str_contains($descLower, $disqualifier)) {
+            if (str_contains($combinedText, $disqualifier)) {
                 return [
                     'eligible' => false,
                     'reason'   => "Disqualified: requires {$disqualifier}",
@@ -233,7 +249,7 @@ class JobFilter
             ];
         }
 
-        $locationCheck = self::isLocationEligible($location, $description);
+        $locationCheck = self::isLocationEligible($location, $description, $title);
         if (!$locationCheck['eligible']) {
             return $locationCheck;
         }
